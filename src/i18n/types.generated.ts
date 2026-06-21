@@ -5,8 +5,8 @@
  * 직접 수정하지 마세요.
  *
  * 생성 명령: pnpm run generate:i18n-types
- * 생성 시간: 2026-06-21T07:58:30.994Z
- * 총 키 개수: 1809
+ * 생성 시간: 2026-06-21T08:26:34.511Z
+ * 총 키 개수: 1811
  * Namespace 수: 11
  */
 
@@ -212,7 +212,7 @@ export type CommonKeys =
   | 'time.yesterday';
 
 /**
- * analytics namespace의 번역 키 (180개)
+ * analytics namespace의 번역 키 (182개)
  * 파일: locales/{lang}/analytics.json
  */
 export type AnalyticsKeys =
@@ -292,6 +292,8 @@ export type AnalyticsKeys =
   | 'analytics.min'
   | 'analytics.minutesUnit'
   | 'analytics.modelDistribution'
+  | 'analytics.mostUsedSkillsTitle'
+  | 'analytics.mostUsedSubagentsTitle'
   | 'analytics.mostUsedTools'
   | 'analytics.mostUsedToolsTitle'
   | 'analytics.noActivity'
@@ -2023,6 +2025,8 @@ export type TranslationKey =
   | 'analytics.min'
   | 'analytics.minutesUnit'
   | 'analytics.modelDistribution'
+  | 'analytics.mostUsedSkillsTitle'
+  | 'analytics.mostUsedSubagentsTitle'
   | 'analytics.mostUsedTools'
   | 'analytics.mostUsedToolsTitle'
   | 'analytics.noActivity'
