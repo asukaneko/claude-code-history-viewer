@@ -41,6 +41,8 @@ pub async fn scan_all_projects(
             "kimi".to_string(),
             "forgecode".to_string(),
             "opencode".to_string(),
+            "openinterpreter".to_string(),
+            "qwen".to_string(),
             "cline".to_string(),
             "crush".to_string(),
             "cursor".to_string(),
@@ -51,6 +53,9 @@ pub async fn scan_all_projects(
             "codebuddy".to_string(),
             "kiro".to_string(),
             "llm".to_string(),
+            "zed".to_string(),
+            "openhands".to_string(),
+            "trae".to_string(),
         ]
     });
 
@@ -177,6 +182,56 @@ pub async fn scan_all_projects(
             Ok(projects) => all_projects.extend(projects),
             Err(e) => {
                 log::warn!("OpenCode scan failed: {e}");
+            }
+        }
+    }
+
+    // Open Interpreter (Codex-format rollouts under ~/.openinterpreter)
+    if providers_to_scan.iter().any(|p| p == "openinterpreter") {
+        match providers::openinterpreter::scan_projects() {
+            Ok(projects) => all_projects.extend(projects),
+            Err(e) => {
+                log::warn!("Open Interpreter scan failed: {e}");
+            }
+        }
+    }
+
+    // Qwen Code (JSONL transcripts under ~/.qwen/projects)
+    if providers_to_scan.iter().any(|p| p == "qwen") {
+        match providers::qwen::scan_projects() {
+            Ok(projects) => all_projects.extend(projects),
+            Err(e) => {
+                log::warn!("Qwen scan failed: {e}");
+            }
+        }
+    }
+
+    // Zed (Agent Panel threads — SQLite + Zstd JSON)
+    if providers_to_scan.iter().any(|p| p == "zed") {
+        match providers::zed::scan_projects() {
+            Ok(projects) => all_projects.extend(projects),
+            Err(e) => {
+                log::warn!("Zed scan failed: {e}");
+            }
+        }
+    }
+
+    // OpenHands (classic ~/.openhands/sessions event store)
+    if providers_to_scan.iter().any(|p| p == "openhands") {
+        match providers::openhands::scan_projects() {
+            Ok(projects) => all_projects.extend(projects),
+            Err(e) => {
+                log::warn!("OpenHands scan failed: {e}");
+            }
+        }
+    }
+
+    // Trae IDE (reverse-engineered icube chat in per-workspace state.vscdb)
+    if providers_to_scan.iter().any(|p| p == "trae") {
+        match providers::trae::scan_projects() {
+            Ok(projects) => all_projects.extend(projects),
+            Err(e) => {
+                log::warn!("Trae scan failed: {e}");
             }
         }
     }
@@ -442,6 +497,8 @@ pub async fn load_provider_sessions(
         "kimi" => providers::kimi::load_sessions(&project_path, exclude),
         "forgecode" => providers::forgecode::load_sessions(&project_path, exclude),
         "opencode" => providers::opencode::load_sessions(&project_path, exclude),
+        "openinterpreter" => providers::openinterpreter::load_sessions(&project_path, exclude),
+        "qwen" => providers::qwen::load_sessions(&project_path, exclude),
         "cline" => providers::cline::load_sessions(&project_path, exclude),
         "crush" => providers::crush::load_sessions(&project_path, exclude),
         "cursor" => providers::cursor::load_sessions(&project_path, exclude),
@@ -452,6 +509,9 @@ pub async fn load_provider_sessions(
         "codebuddy" => providers::codebuddy::load_sessions(&project_path, exclude),
         "kiro" => providers::kiro::load_sessions(&project_path, exclude),
         "llm" => providers::llm::load_sessions(&project_path, exclude),
+        "zed" => providers::zed::load_sessions(&project_path, exclude),
+        "openhands" => providers::openhands::load_sessions(&project_path, exclude),
+        "trae" => providers::trae::load_sessions(&project_path, exclude),
         _ => Err(format!("Unknown provider: {provider}")),
     }
 }
@@ -482,6 +542,8 @@ pub async fn load_provider_messages(
         "kimi" => providers::kimi::load_messages(&session_path)?,
         "forgecode" => providers::forgecode::load_messages(&session_path)?,
         "opencode" => providers::opencode::load_messages(&session_path)?,
+        "openinterpreter" => providers::openinterpreter::load_messages(&session_path)?,
+        "qwen" => providers::qwen::load_messages(&session_path)?,
         "cline" => providers::cline::load_messages(&session_path)?,
         "crush" => providers::crush::load_messages(&session_path)?,
         "cursor" => providers::cursor::load_messages(&session_path)?,
@@ -492,6 +554,9 @@ pub async fn load_provider_messages(
         "codebuddy" => providers::codebuddy::load_messages(&session_path)?,
         "kiro" => providers::kiro::load_messages(&session_path)?,
         "llm" => providers::llm::load_messages(&session_path)?,
+        "zed" => providers::zed::load_messages(&session_path)?,
+        "openhands" => providers::openhands::load_messages(&session_path)?,
+        "trae" => providers::trae::load_messages(&session_path)?,
         _ => return Err(format!("Unknown provider: {provider}")),
     };
 
@@ -528,6 +593,8 @@ pub async fn search_all_providers(
             "kimi".to_string(),
             "forgecode".to_string(),
             "opencode".to_string(),
+            "openinterpreter".to_string(),
+            "qwen".to_string(),
             "cline".to_string(),
             "crush".to_string(),
             "cursor".to_string(),
@@ -538,6 +605,9 @@ pub async fn search_all_providers(
             "codebuddy".to_string(),
             "kiro".to_string(),
             "llm".to_string(),
+            "zed".to_string(),
+            "openhands".to_string(),
+            "trae".to_string(),
         ]
     });
 
@@ -680,6 +750,26 @@ pub async fn search_all_providers(
         }
     }
 
+    // Open Interpreter
+    if providers_to_search.iter().any(|p| p == "openinterpreter") {
+        match providers::openinterpreter::search(&query, max_results) {
+            Ok(results) => all_results.extend(results),
+            Err(e) => {
+                log::warn!("Open Interpreter search failed: {e}");
+            }
+        }
+    }
+
+    // Qwen Code
+    if providers_to_search.iter().any(|p| p == "qwen") {
+        match providers::qwen::search(&query, max_results) {
+            Ok(results) => all_results.extend(results),
+            Err(e) => {
+                log::warn!("Qwen search failed: {e}");
+            }
+        }
+    }
+
     // Cline
     if providers_to_search.iter().any(|p| p == "cline") {
         match providers::cline::search(&query, max_results) {
@@ -775,6 +865,36 @@ pub async fn search_all_providers(
             Ok(results) => all_results.extend(results),
             Err(e) => {
                 log::warn!("llm search failed: {e}");
+            }
+        }
+    }
+
+    // Zed
+    if providers_to_search.iter().any(|p| p == "zed") {
+        match providers::zed::search(&query, max_results) {
+            Ok(results) => all_results.extend(results),
+            Err(e) => {
+                log::warn!("Zed search failed: {e}");
+            }
+        }
+    }
+
+    // OpenHands
+    if providers_to_search.iter().any(|p| p == "openhands") {
+        match providers::openhands::search(&query, max_results) {
+            Ok(results) => all_results.extend(results),
+            Err(e) => {
+                log::warn!("OpenHands search failed: {e}");
+            }
+        }
+    }
+
+    // Trae IDE
+    if providers_to_search.iter().any(|p| p == "trae") {
+        match providers::trae::search(&query, max_results) {
+            Ok(results) => all_results.extend(results),
+            Err(e) => {
+                log::warn!("Trae search failed: {e}");
             }
         }
     }

@@ -58,7 +58,12 @@ describe("providers utils", () => {
       "kiro",
       "llm",
       "opencode",
+      "openhands",
+      "openinterpreter",
       "pearai",
+      "qwen",
+      "trae",
+      "zed",
     ]);
   });
 

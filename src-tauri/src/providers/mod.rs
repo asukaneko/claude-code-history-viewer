@@ -20,10 +20,15 @@ pub mod kimi;
 pub mod kiro;
 pub mod llm;
 pub mod opencode;
+pub mod openhands;
+pub mod openinterpreter;
 pub mod pearai;
 /// Shared `ConversationState` parsing for the Amazon Q CLI lineage (amazon_q + kiro).
 pub mod q_conversation;
+pub mod qwen;
+pub mod trae;
 pub mod vscode;
+pub mod zed;
 
 /// Provider identifier
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -58,7 +63,17 @@ pub enum ProviderId {
     /// Simon Willison's `llm` CLI (`~/.../io.datasette.llm/logs.db`).
     Llm,
     OpenCode,
+    /// Open Interpreter (Rust v1.0) — Codex-format rollouts under `~/.openinterpreter`.
+    OpenInterpreter,
+    /// `OpenHands` (classic 0.x) — `~/.openhands/sessions/<id>/events/*.json`.
+    OpenHands,
+    /// Qwen Code (Gemini-CLI fork) — JSONL transcripts under `~/.qwen/projects`.
+    Qwen,
     Antigravity,
+    /// Zed Agent Panel threads (`SQLite` + Zstd JSON at `…/Zed/threads/threads.db`).
+    Zed,
+    /// Trae IDE chat (reverse-engineered icube JSON in per-workspace `state.vscdb`).
+    Trae,
 }
 
 impl ProviderId {
@@ -83,7 +98,12 @@ impl ProviderId {
             Self::Kiro => "kiro",
             Self::Llm => "llm",
             Self::OpenCode => "opencode",
+            Self::OpenInterpreter => "openinterpreter",
+            Self::OpenHands => "openhands",
+            Self::Qwen => "qwen",
             Self::Antigravity => "antigravity",
+            Self::Zed => "zed",
+            Self::Trae => "trae",
         }
     }
 
@@ -108,7 +128,12 @@ impl ProviderId {
             "kiro" => Some(Self::Kiro),
             "llm" => Some(Self::Llm),
             "opencode" => Some(Self::OpenCode),
+            "openinterpreter" => Some(Self::OpenInterpreter),
+            "openhands" => Some(Self::OpenHands),
+            "qwen" => Some(Self::Qwen),
             "antigravity" => Some(Self::Antigravity),
+            "zed" => Some(Self::Zed),
+            "trae" => Some(Self::Trae),
             _ => None,
         }
     }
@@ -134,7 +159,12 @@ impl ProviderId {
             Self::Kiro => "Kiro CLI",
             Self::Llm => "llm",
             Self::OpenCode => "OpenCode",
+            Self::OpenInterpreter => "Open Interpreter",
+            Self::OpenHands => "OpenHands",
+            Self::Qwen => "Qwen Code",
             Self::Antigravity => "Antigravity",
+            Self::Zed => "Zed",
+            Self::Trae => "Trae",
         }
     }
 }
@@ -177,6 +207,21 @@ pub fn detect_providers() -> Vec<ProviderInfo> {
         providers.push(info);
     }
     if let Some(info) = opencode::detect() {
+        providers.push(info);
+    }
+    if let Some(info) = openinterpreter::detect() {
+        providers.push(info);
+    }
+    if let Some(info) = openhands::detect() {
+        providers.push(info);
+    }
+    if let Some(info) = qwen::detect() {
+        providers.push(info);
+    }
+    if let Some(info) = zed::detect() {
+        providers.push(info);
+    }
+    if let Some(info) = trae::detect() {
         providers.push(info);
     }
     if let Some(info) = cline::detect() {

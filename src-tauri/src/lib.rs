@@ -1095,6 +1095,43 @@ fn collect_watch_paths() -> Vec<std::path::PathBuf> {
         }
     }
 
+    if let Some(oi_base) = providers::openinterpreter::get_base_path() {
+        for sub in ["sessions", "archived_sessions"] {
+            let dir = PathBuf::from(&oi_base).join(sub);
+            if dir.is_dir() {
+                paths.push(dir);
+            }
+        }
+    }
+
+    if let Some(qwen_base) = providers::qwen::get_base_path() {
+        let qwen_projects = PathBuf::from(qwen_base);
+        if qwen_projects.is_dir() {
+            paths.push(qwen_projects);
+        }
+    }
+
+    if let Some(zed_base) = providers::zed::get_base_path() {
+        let zed_dir = PathBuf::from(zed_base);
+        if zed_dir.is_dir() {
+            paths.push(zed_dir);
+        }
+    }
+
+    if let Some(oh_base) = providers::openhands::get_base_path() {
+        let oh_dir = PathBuf::from(oh_base);
+        if oh_dir.is_dir() {
+            paths.push(oh_dir);
+        }
+    }
+
+    if let Some(trae_base) = providers::trae::get_base_path() {
+        let trae_dir = PathBuf::from(trae_base);
+        if trae_dir.is_dir() {
+            paths.push(trae_dir);
+        }
+    }
+
     if let Some(copilot_base) = providers::copilot_cli::get_base_path() {
         let session_state = PathBuf::from(copilot_base).join("session-state");
         if session_state.is_dir() {
