@@ -849,19 +849,19 @@ fn scan_global_directory_projects(
     project: &DbProjectRecord,
 ) -> Vec<ClaudeProject> {
     let mut stmt = match conn.prepare(
-        "SELECT COALESCE(NULLIF(s.directory, ''), ?2) AS directory,
+        "SELECT s.directory AS directory,
                 COUNT(*) AS session_count,
                 MIN(s.time_created) AS first_created,
                 MAX(s.time_updated) AS last_updated
          FROM session s
          WHERE s.project_id = ?1
-         GROUP BY COALESCE(NULLIF(s.directory, ''), ?2)",
+         GROUP BY s.directory",
     ) {
         Ok(stmt) => stmt,
         Err(_) => return Vec::new(),
     };
 
-    let rows = match stmt.query_map(rusqlite::params![&project.id, &project.worktree], |row| {
+    let rows = match stmt.query_map(rusqlite::params![&project.id], |row| {
         let directory: String = row.get(0)?;
         let session_count: usize = row.get(1)?;
         let first_created: Option<u64> = row.get(2)?;
@@ -1993,5 +1993,48 @@ mod tests {
         assert_eq!(sessions[0].actual_session_id, "ses_global_a");
         assert_eq!(sessions[0].file_path, "opencode://global/ses_global_a");
         assert_eq!(sessions[0].project_name, "a");
+    }
+
+    #[test]
+    fn sqlite_load_sessions_includes_global_empty_directory_session() {
+        let tmp = tempfile::tempdir().unwrap();
+        let conn = create_test_db(tmp.path());
+        conn.execute(
+            "INSERT INTO project (id, worktree, time_created, time_updated)
+             VALUES ('global', '/', 1700000000000, 1700000500000)",
+            [],
+        )
+        .unwrap();
+        // OpenCode schema defaults `directory` to '', so this case is reachable in real data.
+        conn.execute(
+            "INSERT INTO session (id, project_id, title, directory, time_created, time_updated)
+             VALUES ('ses_global_empty', 'global', 'Global Empty', '', 1700000100000, 1700000200000)",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO session (id, project_id, title, directory, time_created, time_updated)
+             VALUES ('ses_global_a', 'global', 'Global A', '/tmp/a', 1700000200000, 1700000300000)",
+            [],
+        )
+        .unwrap();
+        drop(conn);
+
+        let projects = scan_projects_from_db(&tmp.path().to_string_lossy()).unwrap();
+        let empty_dir_project = projects
+            .iter()
+            .find(|project| {
+                project.path.starts_with("opencode://global-dir-") && project.actual_path == "/"
+            })
+            .expect("virtual project for empty-directory sessions should exist");
+        assert_eq!(empty_dir_project.session_count, 1);
+        assert!(empty_dir_project.path.starts_with("opencode://global-dir-"));
+
+        let project_ref = OpenCodeProjectRef::parse(&empty_dir_project.path).unwrap();
+        let sessions = load_sessions_from_db(&tmp.path().to_string_lossy(), &project_ref)
+            .expect("empty-directory sessions must load, not be silently dropped");
+        assert_eq!(sessions.len(), 1);
+        assert_eq!(sessions[0].actual_session_id, "ses_global_empty");
+        assert_eq!(sessions[0].file_path, "opencode://global/ses_global_empty");
     }
 }
